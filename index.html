@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OrbitLab — Simulador Didático de Órbitas</title>
+<style>
+:root{
+  --bg:#07131f; --panel:#0e2030; --panel2:#132a3d; --line:#274761;
+  --text:#eef7ff; --muted:#9eb6c9; --accent:#4cc9f0; --accent2:#7cf3b8;
+  --warn:#ffd166; --danger:#ff6b6b; --earth:#4aa3ff;
+  --radius:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 20% 0%,#12314a 0,#07131f 42%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+header{padding:22px 28px;border-bottom:1px solid #1e3c53;background:rgba(5,17,28,.72);backdrop-filter:blur(12px);position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:14px;max-width:1500px;margin:auto}.logo{width:46px;height:46px;border-radius:50%;border:2px solid var(--accent);display:grid;place-items:center;box-shadow:0 0 28px #4cc9f055}.logo:before{content:"◉";font-size:26px}.brand h1{margin:0;font-size:1.35rem}.brand p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+main{max-width:1500px;margin:0 auto;padding:22px;display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px}
+.card{background:linear-gradient(180deg,rgba(20,43,61,.96),rgba(10,28,41,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 16px 44px rgba(0,0,0,.24)}
+.sidebar{padding:18px;align-self:start;position:sticky;top:110px}.sidebar h2,.panel h2{font-size:1rem;margin:0 0 12px}.section{padding:15px 0;border-top:1px solid #24465f}.section:first-of-type{border-top:none;padding-top:0}
+label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:6px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.field input{width:100%;background:#071824;color:var(--text);border:1px solid #2d536d;border-radius:10px;padding:10px 9px;outline:none}.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #4cc9f01a}.unit{font-size:.72rem;color:#7190a7;margin-top:4px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}.btn{border:none;border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:700;background:#18364b;color:var(--text);border:1px solid #2c536d}.btn:hover{filter:brightness(1.12)}.btn.primary{background:linear-gradient(90deg,#1c8fd1,#2ac3c7);border:none}.btn.ghost{background:transparent}.btn.small{padding:8px 9px;font-size:.78rem}
+.timebox{display:grid;grid-template-columns:1fr 90px;gap:10px;align-items:end}.timebox input[type=range]{width:100%}.timebox input[type=number]{width:100%;background:#071824;color:var(--text);border:1px solid #2d536d;border-radius:10px;padding:9px}
+.content{display:grid;grid-template-rows:auto auto auto;gap:20px}.hero{padding:18px}.heroTop{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.badge{display:inline-flex;align-items:center;gap:8px;background:#0a2232;border:1px solid #2c516a;padding:7px 10px;border-radius:999px;color:var(--muted);font-size:.78rem}.dot{width:9px;height:9px;border-radius:50%;background:var(--accent2);box-shadow:0 0 12px var(--accent2)}
+.visualWrap{position:relative;height:570px;border-radius:14px;overflow:hidden;background:radial-gradient(circle at center,#0c2a40 0,#07131f 65%);border:1px solid #1f4258}.visualWrap:before{content:"";position:absolute;inset:0;background-image:radial-gradient(#ffffff22 1px,transparent 1px);background-size:36px 36px;opacity:.35;pointer-events:none}
+svg{width:100%;height:100%;display:block}.axis{stroke:#44657b;stroke-width:1;stroke-dasharray:6 6}.orbit{fill:none;stroke:var(--accent);stroke-width:3}.orbit.hyper{stroke:var(--warn)}.radiusLine{stroke:#dbefff;stroke-width:1.2;stroke-dasharray:5 5;opacity:.72}.sat{fill:var(--accent2);stroke:#effff7;stroke-width:2}.earth{fill:url(#earthGrad);stroke:#bfe1ff;stroke-width:2}.peri{fill:#ffb35c}.apo{fill:#c99cff}.label{fill:#d8ecfa;font-size:14px}.minor{fill:#86a8bd;font-size:12px}.vector{stroke:#ffda75;stroke-width:2;marker-end:url(#arrow)}
+.metrics{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:10px;margin-top:14px}.metric{padding:12px;background:#0a1b28;border:1px solid #214057;border-radius:12px}.metric .k{color:var(--muted);font-size:.72rem}.metric .v{font-size:1.05rem;font-weight:800;margin-top:3px}.metric .hint{font-size:.68rem;color:#7894a8;margin-top:3px}
+.bottomGrid{display:grid;grid-template-columns:1.05fr .95fr;gap:20px}.panel{padding:18px}.formula{font-family:Georgia,serif;background:#081a27;border:1px solid #24465f;border-radius:12px;padding:13px;margin:9px 0;text-align:center;font-size:1.06rem}.explain{color:#c8dbe8;line-height:1.55;font-size:.92rem}.steps{display:grid;gap:10px}.step{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}.num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#173f58;color:#aeeaff;font-weight:800}.step b{display:block;margin-bottom:2px}.step p{margin:0;color:var(--muted);font-size:.85rem;line-height:1.4}.status{padding:10px 12px;border-radius:10px;background:#082030;border:1px solid #2b5873;font-size:.82rem;color:#bcd2e0}.warn{border-color:#8d6d25;background:#2a220a;color:#ffe6a6}.error{border-color:#7e2d2d;background:#2a0f14;color:#ffc3c3}
+.codehint{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#a6e8ff;font-size:.76rem;background:#071721;padding:10px;border-radius:10px;overflow:auto}.footerNote{color:#6f8da2;font-size:.76rem;margin-top:12px}
+@media(max-width:1050px){main{grid-template-columns:1fr}.sidebar{position:static}.metrics{grid-template-columns:repeat(3,1fr)}.bottomGrid{grid-template-columns:1fr}}
+@media(max-width:640px){main{padding:12px}.visualWrap{height:420px}.metrics{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr}.timebox{grid-template-columns:1fr}.heroTop{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo"></div>
+    <div>
+      <h1>OrbitLab — Simulador Didático de Órbitas</h1>
+      <p>Explore como posição, velocidade, excentricidade e tempo modificam uma trajetória orbital.</p>
+    </div>
+  </div>
+</header>
+<main>
+  <aside class="card sidebar">
+    <h2>Dados iniciais</h2>
+    <div class="section">
+      <label>Vetor posição <b>r</b> (km)</label>
+      <div class="grid3">
+        <div class="field"><input id="rx" type="number" step="any" value="7000"><div class="unit">x</div></div>
+        <div class="field"><input id="ry" type="number" step="any" value="0"><div class="unit">y</div></div>
+        <div class="field"><input id="rz" type="number" step="any" value="0"><div class="unit">z</div></div>
+      </div>
+    </div>
+    <div class="section">
+      <label>Vetor velocidade <b>v</b> (km/s)</label>
+      <div class="grid3">
+        <div class="field"><input id="vx" type="number" step="any" value="0"><div class="unit">Vx</div></div>
+        <div class="field"><input id="vy" type="number" step="any" value="8"><div class="unit">Vy</div></div>
+        <div class="field"><input id="vz" type="number" step="any" value="0"><div class="unit">Vz</div></div>
+      </div>
+    </div>
+    <div class="section">
+      <label>Exemplos rápidos</label>
+      <div class="btnrow">
+        <button class="btn small" onclick="preset('leo')">LEO ~400 km</button>
+        <button class="btn small" onclick="preset('ellipse')">Elipse visível</button>
+        <button class="btn small" onclick="preset('inclined')">Órbita inclinada</button>
+        <button class="btn small" onclick="preset('hyper')">Hiperbólica</button>
+      </div>
+    </div>
+    <div class="section">
+      <button class="btn primary" style="width:100%" onclick="simulate(true)">Calcular órbita</button>
+    </div>
+    <div class="section">
+      <label>Avançar no tempo</label>
+      <div class="timebox">
+        <input id="timeSlider" type="range" min="0" max="100" value="0" step="0.1" oninput="onTimeSlider()">
+        <input id="timeSec" type="number" value="0" step="10" oninput="onTimeInput()">
+      </div>
+      <div class="unit" id="timeHint">0% de uma volta</div>
+      <div class="btnrow" style="margin-top:10px">
+        <button id="playBtn" class="btn small" onclick="toggleAnimation()">▶ Animar</button>
+        <button class="btn small ghost" onclick="resetTime()">↺ Reiniciar</button>
+      </div>
+    </div>
+    <div id="status" class="status">Pronto para simular.</div>
+    <div class="footerNote">Modelo de dois corpos: Terra esférica, sem arrasto atmosférico e sem perturbações.</div>
+  </aside>
+
+  <section class="content">
+    <div class="card hero">
+      <div class="heroTop">
+        <div>
+          <h2 style="margin:0 0 4px">Plano orbital</h2>
+          <div style="color:var(--muted);font-size:.84rem">Visualização perifocal: a Terra fica em um dos focos da trajetória.</div>
+        </div>
+        <div class="badge"><span class="dot"></span><span id="orbitType">Órbita elíptica</span></div>
+      </div>
+      <div class="visualWrap">
+        <svg id="orbitSvg" viewBox="0 0 1000 620" role="img" aria-label="Visualização da órbita">
+          <defs>
+            <radialGradient id="earthGrad"><stop offset="0%" stop-color="#a8dbff"/><stop offset="55%" stop-color="#4aa3ff"/><stop offset="100%" stop-color="#1c5b9b"/></radialGradient>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#ffda75"/></marker>
+          </defs>
+          <g id="scene"></g>
+        </svg>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="k">Excentricidade e</div><div class="v" id="mE">—</div><div class="hint">forma da órbita</div></div>
+        <div class="metric"><div class="k">Semieixo maior a</div><div class="v" id="mA">—</div><div class="hint">tamanho orbital</div></div>
+        <div class="metric"><div class="k">Período T</div><div class="v" id="mT">—</div><div class="hint">tempo de uma volta</div></div>
+        <div class="metric"><div class="k">Perigeu</div><div class="v" id="mRp">—</div><div class="hint">menor distância</div></div>
+        <div class="metric"><div class="k">Apogeu</div><div class="v" id="mRa">—</div><div class="hint">maior distância</div></div>
+        <div class="metric"><div class="k">Velocidade atual</div><div class="v" id="mV">—</div><div class="hint">módulo de v</div></div>
+      </div>
+    </div>
+
+    <div class="bottomGrid">
+      <div class="card panel">
+        <h2>O que está acontecendo?</h2>
+        <div class="steps">
+          <div class="step"><div class="num">1</div><div><b>Estado inicial</b><p>Você informa posição e velocidade em relação ao centro da Terra.</p></div></div>
+          <div class="step"><div class="num">2</div><div><b>Momento angular específico</b><p>O simulador calcula <span class="codehint">h = r × v</span>, que define o plano orbital.</p></div></div>
+          <div class="step"><div class="num">3</div><div><b>Vetor excentricidade</b><p>Ele aponta para o periapsis e seu módulo indica se a trajetória é circular, elíptica ou hiperbólica.</p></div></div>
+          <div class="step"><div class="num">4</div><div><b>Propagação no tempo</b><p>Para elipses, o tempo avança pela anomalia média e a equação de Kepler é resolvida numericamente.</p></div></div>
+        </div>
+      </div>
+      <div class="card panel">
+        <h2>Fórmulas-chave</h2>
+        <div class="formula">μ = 398600,4418 km³/s²</div>
+        <div class="formula">e⃗ = (v⃗ × h⃗)/μ − r⃗/|r⃗|</div>
+        <div class="formula">T = 2π √(a³/μ)</div>
+        <div class="formula">M = E − e sen(E)</div>
+        <p class="explain">O período depende do semieixo maior. A excentricidade controla a forma da trajetória: <b>e = 0</b> é circular, <b>0 &lt; e &lt; 1</b> é elíptica e <b>e &gt; 1</b> é hiperbólica.</p>
+      </div>
+    </div>
+
+    <div class="card panel">
+      <h2>Leitura didática da simulação</h2>
+      <p class="explain" id="eduText">Altere os valores à esquerda e pressione “Calcular órbita”. O painel explicará como a trajetória mudou.</p>
+    </div>
+  </section>
+</main>
+<script>
+const MU = 398600.4418;
+const TOL = 1e-12;
+const MAX_IT = 50;
+let state = null;
+let anim = null;
+
+const V = {
+  add:(a,b)=>a.map((x,i)=>x+b[i]), sub:(a,b)=>a.map((x,i)=>x-b[i]), mul:(a,s)=>a.map(x=>x*s),
+  dot:(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0), cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],
+  norm:a=>Math.sqrt(a.reduce((s,x)=>s+x*x,0)), unit:a=>{const n=V.norm(a); return n===0?[0,0,0]:V.mul(a,1/n)}
+};
+function val(id){return Number(document.getElementById(id).value)}
+function fmt(x,d=2){return Number.isFinite(x)?x.toLocaleString('pt-BR',{maximumFractionDigits:d,minimumFractionDigits:d}):'—'}
+function computeElements(r,v){
+  const rmag=V.norm(r), vmag=V.norm(v), h=V.cross(r,v), hmag=V.norm(h);
+  if(rmag===0) throw new Error('O vetor posição não pode ser nulo.');
+  if(hmag===0) throw new Error('Posição e velocidade não podem ser paralelas em uma órbita válida.');
+  const evec=V.sub(V.mul(V.cross(v,h),1/MU),V.mul(r,1/rmag));
+  const e=V.norm(evec);
+  const energy=vmag*vmag/2-MU/rmag;
+  const circular=e<1e-8;
+  const type=circular?'Circular':(e<1?'Elíptica':(Math.abs(e-1)<1e-7?'Parabólica':'Hiperbólica'));
+  let a=null,b=null,n=null,T=null,rp=null,ra=null;
+  if(Math.abs(e-1)>1e-10){
+    a=Math.abs(hmag*hmag/(MU*(1-e*e)));
+    b=a*Math.sqrt(Math.abs(1-e*e));
+    n=Math.sqrt(MU/(a*a*a));
+    rp=a*Math.abs(1-e);
+    if(e<1){ra=a*(1+e); T=2*Math.PI/n;}
+  }
+  let pHat,qHat,hHat=V.unit(h);
+  if(circular){pHat=V.unit(r);} else {pHat=V.unit(evec);}
+  qHat=V.unit(V.cross(hHat,pHat));
+  const x0=V.dot(r,pHat), y0=V.dot(r,qHat);
+  let M0=0, anomaly0=0;
+  if(e<1 && !circular){
+    const cosE=(1-rmag/a)/e;
+    const sinE=(V.dot(r,v))/(e*Math.sqrt(MU*a));
+    anomaly0=Math.atan2(sinE,cosE);
+    M0=anomaly0-e*Math.sin(anomaly0);
+  } else if(circular){
+    anomaly0=Math.atan2(y0,x0); M0=anomaly0;
+  } else if(e>1){
+    const coshF=(rmag/a+1)/e;
+    const base=Math.max(1,coshF);
+    const sign=V.dot(r,v)<0?-1:1;
+    anomaly0=sign*Math.acosh(base);
+    M0=e*Math.sinh(anomaly0)-anomaly0;
+  }
+  return {r0:r.slice(),v0:v.slice(),r:r.slice(),v:v.slice(),rmag,vmag,h,hmag,evec,e,energy,type,circular,a,b,n,T,rp,ra,pHat,qHat,hHat,M0,anomaly0,time:0};
+}
+function solveEllipseE(M,e){
+  M=((M+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;
+  let E=e>0.8?Math.PI:M;
+  for(let i=0;i<MAX_IT;i++){
+    const f=E-e*Math.sin(E)-M, fp=1-e*Math.cos(E), d=f/fp; E-=d; if(Math.abs(d)<TOL) return E;
+  }
+  return E;
+}
+function solveHyperF(M,e){
+  if(Math.abs(M)<1e-15) return 0;
+  let F=Math.asinh(M/e);
+  for(let i=0;i<MAX_IT;i++){
+    const f=e*Math.sinh(F)-F-M, fp=e*Math.cosh(F)-1, d=f/fp; F-=d; if(Math.abs(d)<TOL*(1+Math.abs(F))) return F;
+  }
+  return F;
+}
+function propagate(s,t){
+  if(s.circular){
+    const th=s.M0+s.n*t; const c=Math.cos(th),si=Math.sin(th);
+    s.r=V.add(V.mul(s.pHat,s.a*c),V.mul(s.qHat,s.a*si));
+    s.v=V.add(V.mul(s.pHat,-s.a*s.n*si),V.mul(s.qHat,s.a*s.n*c));
+  } else if(s.e<1){
+    const M=s.M0+s.n*t, E=solveEllipseE(M,s.e), c=Math.cos(E),si=Math.sin(E);
+    const x=s.a*(c-s.e), y=s.b*si;
+    s.r=V.add(V.mul(s.pHat,x),V.mul(s.qHat,y));
+    const Edot=s.n/(1-s.e*c);
+    s.v=V.add(V.mul(s.pHat,-s.a*si*Edot),V.mul(s.qHat,s.b*c*Edot));
+  } else if(s.e>1){
+    const M=s.M0+s.n*t, F=solveHyperF(M,s.e), ch=Math.cosh(F),sh=Math.sinh(F);
+    const x=s.a*(s.e-ch), y=s.b*sh;
+    s.r=V.add(V.mul(s.pHat,x),V.mul(s.qHat,y));
+    const Fdot=s.n/(s.e*ch-1);
+    s.v=V.add(V.mul(s.pHat,-s.a*sh*Fdot),V.mul(s.qHat,s.b*ch*Fdot));
+  }
+  s.rmag=V.norm(s.r); s.vmag=V.norm(s.v); s.time=t;
+}
+function simulate(reset=true){
+  try{
+    const r=[val('rx'),val('ry'),val('rz')],v=[val('vx'),val('vy'),val('vz')];
+    state=computeElements(r,v);
+    if(state.type==='Parabólica') throw new Error('O caso parabólico ainda não foi implementado nesta versão didática.');
+    if(reset) resetTime(false);
+    updateMetrics(); draw(); explain(); setStatus('Simulação calculada com sucesso.');
+  }catch(err){setStatus(err.message,'error');}
+}
+function setStatus(msg,type=''){const s=document.getElementById('status');s.className='status'+(type?' '+type:'');s.textContent=msg}
+function updateMetrics(){
+  document.getElementById('orbitType').textContent='Trajetória '+state.type.toLowerCase();
+  document.getElementById('mE').textContent=fmt(state.e,5);
+  document.getElementById('mA').textContent=state.a?fmt(state.a,1)+' km':'—';
+  document.getElementById('mT').textContent=state.T?fmt(state.T/60,1)+' min':'não periódico';
+  document.getElementById('mRp').textContent=state.rp?fmt(state.rp,1)+' km':'—';
+  document.getElementById('mRa').textContent=state.ra?fmt(state.ra,1)+' km':'∞';
+  document.getElementById('mV').textContent=fmt(state.vmag,3)+' km/s';
+  const slider=document.getElementById('timeSlider');
+  if(state.T){slider.max=100; document.getElementById('timeHint').textContent=fmt((state.time/state.T)*100,1)+'% de uma volta';}
+  else{slider.max=100; document.getElementById('timeHint').textContent='trajetória aberta';}
+}
+function onTimeSlider(){if(!state)return; const p=val('timeSlider')/100; const t=state.T?p*state.T:p*4000; document.getElementById('timeSec').value=t.toFixed(1); propagate(state,t); updateMetrics();draw();}
+function onTimeInput(){if(!state)return; const t=val('timeSec'); propagate(state,t); if(state.T)document.getElementById('timeSlider').value=Math.max(0,Math.min(100,100*t/state.T)); updateMetrics();draw();}
+function resetTime(redraw=true){document.getElementById('timeSlider').value=0;document.getElementById('timeSec').value=0;if(state)propagate(state,0);if(redraw&&state){updateMetrics();draw();}}
+function toggleAnimation(){
+  const b=document.getElementById('playBtn');
+  if(anim){clearInterval(anim);anim=null;b.textContent='▶ Animar';return;}
+  b.textContent='⏸ Pausar';
+  anim=setInterval(()=>{if(!state)return;let t=Number(document.getElementById('timeSec').value)||0; const step=state.T?state.T/250:20;t+=step;if(state.T&&t>state.T)t=0;document.getElementById('timeSec').value=t.toFixed(1);propagate(state,t);if(state.T)document.getElementById('timeSlider').value=100*t/state.T;updateMetrics();draw();},35);
+}
+function preset(name){
+  const p={leo:[6778,0,0,0,7.67,0],ellipse:[7000,0,0,0,8,0],inclined:[7000,0,0,0,7,3],hyper:[7000,0,0,0,11.5,0]}[name];
+  ['rx','ry','rz','vx','vy','vz'].forEach((id,i)=>document.getElementById(id).value=p[i]);simulate(true);
+}
+function draw(){
+  const g=document.getElementById('scene'); g.innerHTML=''; if(!state)return;
+  const W=1000,H=620,cx=W/2,cy=H/2;
+  let pts=[];
+  if(state.e<1){for(let i=0;i<=600;i++){const E=2*Math.PI*i/600;pts.push([state.a*(Math.cos(E)-state.e),state.b*Math.sin(E)]);}}
+  else{const Fmax=2.2;for(let i=0;i<=600;i++){const F=-Fmax+2*Fmax*i/600;pts.push([state.a*(state.e-Math.cosh(F)),state.b*Math.sinh(F)]);}}
+  pts.push([0,0]); const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]); const span=Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys),1); const scale=0.78*Math.min(W,H)/span;
+  const tx=x=>cx+x*scale, ty=y=>cy-y*scale;
+  const path=pts.slice(0,-1).map((p,i)=>(i?'L':'M')+tx(p[0]).toFixed(1)+','+ty(p[1]).toFixed(1)).join(' ');
+  const xSat=V.dot(state.r,state.pHat),ySat=V.dot(state.r,state.qHat);
+  let svg=`<line class="axis" x1="40" y1="${cy}" x2="960" y2="${cy}"/><line class="axis" x1="${cx}" y1="40" x2="${cx}" y2="580"/>`;
+  svg+=`<path class="orbit ${state.e>1?'hyper':''}" d="${path}"/>`;
+  svg+=`<line class="radiusLine" x1="${tx(0)}" y1="${ty(0)}" x2="${tx(xSat)}" y2="${ty(ySat)}"/>`;
+  svg+=`<circle class="earth" cx="${tx(0)}" cy="${ty(0)}" r="18"/><text class="label" x="${tx(0)+24}" y="${ty(0)-16}">Terra (foco)</text>`;
+  svg+=`<circle class="sat" cx="${tx(xSat)}" cy="${ty(ySat)}" r="8"/><text class="label" x="${tx(xSat)+12}" y="${ty(ySat)-12}">satélite</text>`;
+  if(state.rp){svg+=`<circle class="peri" cx="${tx(state.rp)}" cy="${ty(0)}" r="6"/><text class="minor" x="${tx(state.rp)+10}" y="${ty(0)+22}">perigeu</text>`;}
+  if(state.ra){svg+=`<circle class="apo" cx="${tx(-state.ra)}" cy="${ty(0)}" r="6"/><text class="minor" x="${tx(-state.ra)+10}" y="${ty(0)+22}">apogeu</text>`;}
+  const vx2=V.dot(state.v,state.pHat),vy2=V.dot(state.v,state.qHat),vm=Math.hypot(vx2,vy2)||1,arrowLen=75;
+  svg+=`<line class="vector" x1="${tx(xSat)}" y1="${ty(ySat)}" x2="${tx(xSat)+arrowLen*vx2/vm}" y2="${ty(ySat)-arrowLen*vy2/vm}"/><text class="minor" x="${tx(xSat)+10}" y="${ty(ySat)+28}">r = ${fmt(state.rmag,0)} km</text>`;
+  g.innerHTML=svg;
+}
+function explain(){
+  const e=state.e; let txt='';
+  if(state.circular) txt='A trajetória ficou praticamente circular. Isso significa que a excentricidade é próxima de zero e a distância ao centro da Terra permanece quase constante.';
+  else if(e<1) txt=`A trajetória é elíptica (e = ${fmt(e,4)}). O satélite acelera ao se aproximar do perigeu e desacelera ao se aproximar do apogeu. O período calculado é de aproximadamente ${fmt(state.T/60,1)} minutos.`;
+  else txt=`A trajetória é hiperbólica (e = ${fmt(e,4)}). A energia orbital específica é positiva e o objeto não retorna para completar uma volta: trata-se de uma trajetória aberta.`;
+  document.getElementById('eduText').textContent=txt;
+}
+simulate(true);
+</script>
+</body>
+</html>
